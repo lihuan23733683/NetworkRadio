@@ -6,6 +6,15 @@
 
 **当前版本 v0.7.5** | 固件占用 3MB Flash 的 95% | 详见 [硬件与接线](docs/HARDWARE.md) · [功能与使用](docs/USAGE.md) · [架构说明](ARCHITECTURE.md)
 
+> ### ⬇️ 不想编译？直接下载固件烧录
+> **[前往 Releases 下载 v0.7.5 固件](https://github.com/lihuan23733683/NetworkRadio/releases/latest)**
+> 下载 `NetworkRadio-v0.7.5-ESP32S3-full.bin`（4.0 MB），一条命令烧进去就能用：
+> ```bash
+> esptool.py --chip esp32s3 -p COM5 -b 921600 write_flash -z 0x0 NetworkRadio-v0.7.5-ESP32S3-full.bin
+> ```
+> 已烧过旧版的板子可用 `app-only.bin` 从 `0x10000` 升级，保留 WiFi 与电台设置。详见 [Release 说明](https://github.com/lihuan23733683/NetworkRadio/releases/latest)。
+
+
 ![设备实物：2.4寸彩屏显示正在播放界面 + EC11 旋钮](docs/device-photo.jpg)
 
 *▲ 实机运行照：正在播放"中国之声 CNR-1"（HLS 流），屏幕显示播放卡片 / 音量条 / 电台列表 / 走马灯控制台提示*
@@ -78,6 +87,17 @@
 
 ## 🚀 快速开始
 
+### 方式 A：直接烧录现成固件（推荐，无需编译）
+
+1. 下载 [Releases 里的 `full.bin`](https://github.com/lihuan23733683/NetworkRadio/releases/latest)
+2. 接好 USB，执行 `esptool.py --chip esp32s3 -p COM5 -b 921600 write_flash -z 0x0 NetworkRadio-v0.7.5-ESP32S3-full.bin`
+3. 上电 → 手机连热点 `Radio-XXXX`（无密码）→ 浏览器打开 `192.168.4.1` 配网
+4. 同网浏览器访问 `http://radio.local` 进控制台
+
+图形化烧录（Flash Download Tool）与更多细节见 Release 页面说明。
+
+### 方式 B：从源码编译
+
 1. 按接线表连接硬件（先只接功放也能跑）
 2. 用 Arduino IDE 打开 `NetworkRadio.ino`，按 [HARDWARE.md](docs/HARDWARE.md#️-ide-编译选项) 设置工具菜单选项
 3. 编译烧录，打开串口监视器（115200），按提示配网
@@ -92,6 +112,9 @@ NetworkRadio/
 ├── docs/
 │   ├── HARDWARE.md         # 硬件清单、接线表、避坑指南
 │   └── USAGE.md            # 功能与使用手册（屏幕/旋钮/网页/串口）
+├── tools/
+│   ├── publish_release.py  # 一键发布固件到 GitHub Releases
+│   └── release-body.md     # Release 说明文案（含烧录指引）
 └── src/
     ├── core/               # AppConfig.h 全局配置（引脚/常量/存储规范）
     ├── net/                # WiFi 多网络记忆、AP 配网门户

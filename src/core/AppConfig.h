@@ -5,7 +5,7 @@
 #pragma once
 
 #define FW_NAME     "NetworkRadio"
-#define FW_VERSION  "0.7.7"
+#define FW_VERSION  "0.7.8"
 
 // ---------------------------------------------------------------------------
 //  硬件接线（MAX98357A  I2S 功放）—— 按实际接线修改这三行即可

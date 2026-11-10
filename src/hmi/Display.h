@@ -2,7 +2,7 @@
 //  Display.h  --  2.4 寸 TFT 屏（ST7789V 320x240 横屏）UI  v3 纯黑高对比
 //  布局：
 //    ┌────────────────────────────────────────┐
-//    │ 网络收音机                     已连接    │ ← 顶栏 22px
+//    │ 网络收音机                   -52 dBm   │ ← 顶栏 22px（右侧=WiFi 信号强度）
 //    │ ┌────────────────────────────────────┐ │
 //    │ │ 正在播放 · 01              播放中   │ │
 //    │ │ 中国之声（大字）                     │ │ ← 卡片 72px
@@ -188,6 +188,7 @@ private:
     struct Snap {
         uint8_t  cur, state, vol;
         bool     mute, portal, wifi, volMode;
+        int8_t   rssi;          // WiFi 信号强度，量化到 3dB 档防抖动（未连接=127 哨兵）
         uint16_t br8;           // 码率/8kbps 量化，防止 HSL 段间抖动触发重绘
         String   err;
     } _snap{};

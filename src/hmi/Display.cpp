@@ -348,6 +348,7 @@ void Display::loop(Player& p, uint8_t curIdx, bool portalOn) {
     s.mute    = p.muted();
     s.portal  = portalOn;
     s.wifi    = WiFi.isConnected();
+    s.rssi    = s.wifi ? (int8_t)((WiFi.RSSI() / 3) * 3) : 127;  // 量化 3dB 档，信号微抖不触发重绘
     s.br8     = (uint16_t)(p.bitRate() / 8000);
     s.err     = p.lastError();
     s.volMode = _volMode;
@@ -361,7 +362,7 @@ void Display::loop(Player& p, uint8_t curIdx, bool portalOn) {
 
     // ！！先算出"哪些区域变了"，再更新快照 ！！
     // 旧代码先写 _snap.xxx 再比较，比较结果永远为假 -> 列表从不跟随换台（bug）
-    bool chTop  = (s.portal != _snap.portal) || (s.wifi != _snap.wifi);
+    bool chTop  = (s.portal != _snap.portal) || (s.wifi != _snap.wifi) || (s.rssi != _snap.rssi);
     bool chCard = (s.cur    != _snap.cur)    || (s.state != _snap.state) || (s.br8 != _snap.br8);
     bool chList = (s.cur    != _snap.cur);
     bool chVol  = (s.vol    != _snap.vol)    || (s.mute != _snap.mute) || (s.volMode != _snap.volMode);
@@ -530,7 +531,12 @@ void Display::drawTop(bool portalOn, bool wifiOk) {
     // 右侧状态必须用右对齐基准，否则从右边缘向左画会超出屏幕被裁掉（只剩一个"已"）
     _lcd.setTextDatum(textdatum_t::middle_right);
     if (portalOn)      { _lcd.setTextColor(C_AMBER);  _lcd.drawString("配网模式", L.w - 10, L.yTop + L.hTop / 2); }
-    else if (wifiOk)   { _lcd.setTextColor(C_ACCENT); _lcd.drawString("已连接",   L.w - 10, L.yTop + L.hTop / 2); }
+    else if (wifiOk)   {   // 顶栏右侧显示 WiFi 信号强度（dBm 实时值），按强弱变色：>=-60 绿 / -75~-60 琥珀 / <-75 红
+        int r = WiFi.RSSI();
+        uint16_t rc = (r >= -60) ? C_ACCENT : (r >= -75) ? C_AMBER : C_RED;
+        char b[12]; snprintf(b, sizeof(b), "%d dBm", r);
+        _lcd.setTextColor(rc); _lcd.drawString(b, L.w - 10, L.yTop + L.hTop / 2);
+    }
     else               { _lcd.setTextColor(C_RED);    _lcd.drawString("未连接",   L.w - 10, L.yTop + L.hTop / 2); }
     _lcd.setTextDatum(textdatum_t::middle_left);
 }

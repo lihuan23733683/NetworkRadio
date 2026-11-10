@@ -531,11 +531,21 @@ void Display::drawTop(bool portalOn, bool wifiOk) {
     // 右侧状态必须用右对齐基准，否则从右边缘向左画会超出屏幕被裁掉（只剩一个"已"）
     _lcd.setTextDatum(textdatum_t::middle_right);
     if (portalOn)      { _lcd.setTextColor(C_AMBER);  _lcd.drawString("配网模式", L.w - 10, L.yTop + L.hTop / 2); }
-    else if (wifiOk)   {   // 顶栏右侧显示 WiFi 信号强度（dBm 实时值），按强弱变色：>=-60 绿 / -75~-60 琥珀 / <-75 红
+    else if (wifiOk)   {   // WiFi 信号图标（手机样式：实心点+三层扇形弧）+ dBm 数值；颜色按强弱分级
         int r = WiFi.RSSI();
-        uint16_t rc = (r >= -60) ? C_ACCENT : (r >= -75) ? C_AMBER : C_RED;
-        char b[12]; snprintf(b, sizeof(b), "%d dBm", r);
-        _lcd.setTextColor(rc); _lcd.drawString(b, L.w - 10, L.yTop + L.hTop / 2);
+        uint16_t rc  = (r >= -60) ? C_ACCENT : (r >= -75) ? C_AMBER : C_RED;
+        uint16_t dim = 0x39C7;                              // 未点亮层的暗灰（RGB565）
+        int lvl = (r >= -60) ? 3 : (r >= -75) ? 2 : 1;      // 点亮的弧层数
+        char b[8]; snprintf(b, sizeof(b), "%d", r);
+        int ty = L.yTop + L.hTop / 2;
+        _lcd.setTextColor(rc);
+        _lcd.drawString(b, L.w - 10, ty);
+        int ix = L.w - 10 - (int)_lcd.textWidth(b) - 10;    // 图标中心 x（数值左侧留 10px 间隙）
+        int cy = ty + 4;                                    // 图标圆心（底部实心点，弧朝上张开）
+        _lcd.fillCircle(ix, cy, 1, rc);                     // 实心点（最内层）
+        _lcd.fillArc(ix, cy, 4, 2, 225, 315, (lvl >= 1) ? rc : dim);
+        _lcd.fillArc(ix, cy, 7, 5, 225, 315, (lvl >= 2) ? rc : dim);
+        _lcd.fillArc(ix, cy, 10, 8, 225, 315, (lvl >= 3) ? rc : dim);
     }
     else               { _lcd.setTextColor(C_RED);    _lcd.drawString("未连接",   L.w - 10, L.yTop + L.hTop / 2); }
     _lcd.setTextDatum(textdatum_t::middle_left);
